@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alat Pembanding PDF - BRI2</title>
+    <title>File Comparison Tool - BRI</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
@@ -28,7 +28,7 @@
             width: 100%;
         }
 
-        h1 {
+        h3 {
             color: #0048BA;
         }
 
@@ -56,20 +56,20 @@
 
     <div class="container">
         <img src="{{ url_for('static', filename='Logo-Bank-BRI.png') }}" alt="Logo BRI" class="logo">
-        <h1>Virtual Integrity Testing</h1>
+        <h3>Virtual Integrity Testing</h3>
 
         <form action="{{ url_for('upload_files') }}" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
-                <label for="file1" class="form-label">Berkas Figma:</label>
-                <input class="form-control" type="file" name="file1" accept="application/pdf" required>
+                <label for="file1" class="form-label">File 1 (PDF/Image):</label>
+                <input class="form-control" type="file" name="file1" accept="application/pdf,image/png,image/jpeg" required>
             </div>
 
             <div class="mb-3">
-                <label for="file2" class="form-label">Berkas Image Hasil Testing:</label>
-                <input class="form-control" type="file" name="file2" accept="application/pdf" required>
+                <label for="file2" class="form-label">File 2 (PDF/Image):</label>
+                <input class="form-control" type="file" name="file2" accept="application/pdf,image/png,image/jpeg" required>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mb-3">Bandingkan</button>
+            <button type="submit" class="btn btn-primary w-100 mb-3">Compare</button>
         </form>
 
         {% with messages = get_flashed_messages() %}
@@ -86,7 +86,7 @@
 
         <!-- Button to trigger modal -->
         <button type="button" class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#usageModal">
-            Cara Penggunaannya
+            How to Use
         </button>
     </div>
 
@@ -95,17 +95,17 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="usageModalLabel">Cara Penggunaannya</h5>
+                    <h5 class="modal-title" id="usageModalLabel">How to Use</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>1. Unggah berkas Figma dalam format PDF pada kotak yang pertama.</p>
-                    <p>2. Unggah berkas hasil testing dalam format PDF pada kotak yang kedua.</p>
-                    <p>3. Klik tombol "Bandingkan" untuk memulai proses perbandingan.</p>
-                    <p>4. Hasil perbandingan akan ditampilkan di halaman berikutnya.</p>
+                    <p>1. Upload File 1 (PDF or Image) in the first box.</p>
+                    <p>2. Upload File 2 (PDF or Image) in the second box.</p>
+                    <p>3. Click the "Compare" button to start the comparison process.</p>
+                    <p>4. The comparison results will be displayed on the next page.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

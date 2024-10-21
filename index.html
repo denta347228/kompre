@@ -223,41 +223,30 @@
 				
 				const files = event.dataTransfer.files;
 
-				if (files.length > 0) {
-					const img = document.createElement('img');
-					const reader = new FileReader();
-
-					reader.onload = async function(e) {
-
-						img.src = e.target.result;
-						
-						dropzone.appendChild(img);
-						if (dropzone === dropzone1) {
-							hasImage1 = true;
-						} else if (dropzone === dropzone2) {
-							hasImage2 = true;
-						}
-						checkImagesUploaded();
-					};
-
-					const imageRender = files[0].type === 'application/pdf' ? await convertPdfToImage(files[0], 'file') : files[0];
-
-					reader.readAsDataURL(imageRender);
-				}
-			}
-
-			function base64ToFile(base64Data, filename) {
-				const arr = base64Data.split(',');
-				const mime = arr[0].match(/:(.*?);/)[1]; // Get the MIME type
-				const bstr = atob(arr[1]); // Decode base64
-				let n = bstr.length;
-				const u8arr = new Uint8Array(n);
-
-				while (n--) {
-					u8arr[n] = bstr.charCodeAt(n);
+				if (files.length <= 0) {
+					return
 				}
 
-				return new File([u8arr], filename, { type: mime });
+				const img = document.createElement('img');
+				const reader = new FileReader();
+
+				reader.onload = async function(e) {
+					img.src = e.target.result;
+
+					dropzone.innerHTML = '';
+					dropzone.appendChild(img);
+					if (dropzone === dropzone1) {
+						hasImage1 = true;
+					} else if (dropzone === dropzone2) {
+						hasImage2 = true;
+					}
+					checkImagesUploaded();
+				};
+
+				const imageRender = files[0].type === 'application/pdf' ? await convertPdfToImage(files[0], 'file') : files[0];
+
+				
+				reader.readAsDataURL(imageRender);
 			}
 
 			// Check if both dropzones have images
@@ -267,37 +256,7 @@
 					const image2 = document.querySelector('#dropzone2 img');
 					
 					if (image1 && image2) {
-						const formData = new FormData();
-
-						const file1 = base64ToFile(image1.src, 'image1.png'); // Change filename as needed
-						const file2 = base64ToFile(image2.src, 'image2.png'); // Change filename as needed
-
-						formData.append('file1', file1);
-						formData.append('file2', file2);
-
-						fetch('http://127.0.0.1:5000/upload', {
-							method: 'POST',
-							body: formData,
-						})
-						.then(response => {
-							if (!response.ok) {
-								alert('ALERT Network response was not ok');
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(data => {
-							const responseContainer = document.getElementById('responseContainer');
-
-							// Clear previous content, if any
-							responseContainer.innerHTML = ''; 
-
-							// Set the inner HTML to the converted content
-							responseContainer.innerHTML = data.data;
-						})
-						.catch((error) => {
-							console.error('Error:', error);
-						});
+						textCompare(image1, image2)
 					} else {
 						console.log('No image found in the dropzone.');
 					}
@@ -307,6 +266,81 @@
 			// Prevent default behavior for drag over
 			function handleDragOver(event) {
 				event.preventDefault();
+			}
+
+			function secureFilename(filename) {
+				// Convert to lower case
+				filename = filename.toLowerCase();
+
+				// Remove any character that is not alphanumeric, a dot, a dash, or an underscore
+				filename = filename.replace(/[^a-z0-9._-]/g, '');
+
+				// Remove leading and trailing dots and dashes
+				filename = filename.replace(/^[-.]+|[-.]+$/g, '');
+
+				// Optionally limit the length of the filename (e.g., to 255 characters)
+				filename = filename.slice(0, 255);
+
+				return filename;
+			}
+
+			function textCompare(image1, image2) {
+				const formData = new FormData();
+
+				const payload = {
+					"model": "gpt-4o-mini",
+					"messages": [
+						{
+							"role": "user",
+							"content": [
+								{
+									"type": "text",
+									"text": "Bandingkan berkas ini, apakah 2 berkas tersebut sama? bandingkan antar berkas, bukan gambar dalam berkas "
+								},
+								{
+									"type": "image_url",
+									"image_url": {
+										"url": image1.src
+									}
+								},
+								{
+									"type": "image_url",
+									"image_url": {
+										"url": image2.src
+									}
+								}
+							]
+						}
+					],
+					"max_tokens": 500,
+					"temperature": 0
+				}
+
+				const headers = {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${process.env.SECRET_KEY}`
+				}
+
+				fetch('https://api.openai.com/v1/chat/completions', {
+					method: 'POST',
+					body: JSON.stringify(payload),
+					headers: headers
+				})
+				.then(response => {
+					return response.json();
+				})
+				.then(data => {
+					const responseContainer = document.getElementById('responseContainer');
+
+					// Clear previous content, if any
+					responseContainer.innerHTML = ''; 
+
+					// Set the inner HTML to the converted content
+					responseContainer.innerHTML = data.choices[0].message.content;
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
 			}
 
 			// Add event listeners

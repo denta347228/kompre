@@ -99,7 +99,11 @@ $(function() {
     var file2;
     var resembleControl;
 
-    dropZone($("#dropzone1"), function(file) {
+    dropZone($("#dropzone1"), async function(file) {
+        if (file.type === 'application/pdf') {
+            file = await convertPdfToImage(file, 'file1')
+        }
+        
         file1 = file;
         if (file2) {
             resembleControl = resemble(file)
@@ -108,7 +112,10 @@ $(function() {
         }
     });
 
-    dropZone($("#dropzone2"), function(file) {
+    dropZone($("#dropzone2"), async function(file) {
+        if (file.type === 'application/pdf') {
+            file = await convertPdfToImage(file, 'file2')
+        }
         file2 = file;
         if (file1) {
             resembleControl = resemble(file)
@@ -272,43 +279,34 @@ $(function() {
             dthree.resolve(this.response);
         };
         xhr3.send();
-
-        $("#example-images").click(function() {
-            $("#dropzone1").html('<img src="demoassets/People.jpg"/>');
-            $("#dropzone2").html('<img src="demoassets/People2.jpg"/>');
-
-            $.when(done, dtwo).done(function(file, file1) {
-                if (typeof FileReader === "undefined") {
-                    resembleControl = resemble("demoassets/People.jpg")
-                        .compareTo("demoassets/People2.jpg")
-                        .onComplete(onComplete);
-                } else {
-                    resembleControl = resemble(file)
-                        .compareTo(file1)
-                        .onComplete(onComplete);
-                }
-            });
-
-            return false;
-        });
-
-        $("#example-images-alpha").click(function() {
-            $("#dropzone1").html('<img src="demoassets/People.jpg"/>');
-            $("#dropzone2").html('<img src="demoassets/PeopleAlpha.png"/>');
-
-            $.when(done, dthree).done(function(file, file1) {
-                if (typeof FileReader === "undefined") {
-                    resembleControl = resemble("demoassets/People.jpg")
-                        .compareTo("demoassets/PeopleAlpha.png")
-                        .onComplete(onComplete);
-                } else {
-                    resembleControl = resemble(file)
-                        .compareTo(file1)
-                        .onComplete(onComplete);
-                }
-            });
-
-            return false;
-        });
     })();
 });
+
+async function convertPdfToImage(pdfFile, name) {
+    const pdfData = await pdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+    
+    // Get the first page
+    const page = await pdf.getPage(1);
+    
+    // Set scale for rendering
+    const scale = 2; // Adjust as needed
+    const viewport = page.getViewport({ scale });
+
+    // Prepare canvas
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    // Render PDF page into canvas context
+    await page.render({
+        canvasContext: context,
+        viewport: viewport
+    }).promise;
+
+    // Convert canvas to image file
+    const imageDataUrl = canvas.toDataURL('image/png');
+    const blob = await (await fetch(imageDataUrl)).blob();
+    return new File([blob], `${name}-page.png`, { type: 'image/png' });
+}

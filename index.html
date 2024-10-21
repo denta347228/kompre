@@ -20,57 +20,11 @@
 			<section role="main">
 				<div class="row">
 					<div class="span12">
-						<div class="hero-unit">
-							<div class="row">
-								<div class="span6">
-									<p>
-										<div id="drop-zone" class="drop-zone">
-											Drop image here.
-										</div>
-									</p>
-								</div>
-								<div class="span4">
-									<h2>What is this?</h2>
-									<p>
-										Resemble.js analyses and compares images with HTML5 canvas and JavaScript.
-									</p>
-									<p>
-										<strong>Try it for yourself.</strong>
-									</p>
-									<div id="image-data" style="display:none">
-
-										RGBA
-									    <div class="progress progress-danger">
-										    <div id="red" class="bar" style="width: 0%;"></div>
-									    </div>
-									    <div class="progress progress-success">
-										    <div id="green" class="bar" style="width: 0%;"></div>
-									    </div>
-									    <div class="progress">
-										    <div id="blue" class="bar" style="width: 0%;"></div>
-									    </div>
-									    <div class="progress last">
-										    <div id="alpha" class="bar" style="width: 0%;"></div>
-									    </div>
-										Black &amp; white
-										<div class="progress">
-											<div id="black" class="bar" style="width: 0%;"></div>
-										</div>
-										<div class="progress last">
-											<div id="white" class="bar" style="width: 0%;"></div>
-										</div>
-									    Brightness
-									    <div class="progress progress-warning">
-									    	<div id="brightness" class="bar" style="width: 0%;"></div>
-									    </div>
-									</div>
-								</div>
+						<div class="row">
+							<div class="span12">
+								<p id="responseContainer"></p>
 							</div>
 						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="span12">
 						<div class="row">
 							<div class="span6">
 								<div id="dropzone1" class="small-drop-zone">
@@ -238,54 +192,6 @@
 						</div>
 					</div>
 				</div>
-				<br/><br/>
-				<div class="row">
-					<div class="span6">
-						<h2>Why?</h2>
-						<p>
-							Resemble.js can be used for any image analysis and comparison requirement you might have in the browser. However, it has been designed and built for use by the PhantomJS powered visual regression library <a href="https://github.com/Huddle/PhantomCSS" target="_blank">PhantomCSS</a>. PhantomCSS needs to be able to ignore antialiasing as this would cause differences between screenshots derived from different machines.
-						</p>
-						<p>
-							Resemble.js uses the <a href="http://www.w3.org/TR/file-upload/" target="_blank">HTML5 File API</a> to parse image data, and canvas for rendering image diffs.
-						</p>
-						<p>
-							<br/>
-							<a class="btn btn-large btn-primary" href="https://github.com/Huddle/Resemble.js"><strong>View project on GitHub</strong></a>
-						</p>
-					</div>
-					<div class="span6">
-						<h2>How can I use it?</h2>
-						<p>Retrieve basic analysis on image.</p>
-						<pre>
-var api = resemble(fileData).onComplete(function(data){
-	return data;
-	/*
-	{
-	  red: 100,
-	  green: 100,
-	  blue: 100,
-	  brightness: 100,
-	  alpha: 100,
-	  white: 100,
-	  black: 100
-	}
-	*/
-});</pre>
-						<p>Use resemble to compare two images.</p>
-						<pre>
-resemble(file).compareTo(file2).onComplete(function(){
-	return data;
-	/*
-	{
-	  misMatchPercentage : 100, // %
-	  isSameDimensions: true, // or false
-	  getImageDataUrl: function(){}
-	}
-	*/
-});</pre>
-<p>Take a look at the <a href="demoassets/main.js" target="_blank">JavaScript for this demo page</a> from a better example</p>
-					</div>
-				</div>
 			</section>
 
 			<footer class="footer">
@@ -299,6 +205,115 @@ resemble(file).compareTo(file2).onComplete(function(){
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 		<script src="resemble.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
 		<script src="demoassets/main.js"></script>
+
+		<script>
+			// Select dropzones
+			const dropzone1 = document.getElementById('dropzone1');
+			const dropzone2 = document.getElementById('dropzone2');
+
+			// Track uploaded images
+			let hasImage1 = false;
+			let hasImage2 = false;
+
+			// Function to handle image drop
+			async function handleDrop(event, dropzone) {
+				event.preventDefault();
+				
+				const files = event.dataTransfer.files;
+
+				if (files.length > 0) {
+					const img = document.createElement('img');
+					const reader = new FileReader();
+
+					reader.onload = async function(e) {
+
+						img.src = e.target.result;
+						
+						dropzone.appendChild(img);
+						if (dropzone === dropzone1) {
+							hasImage1 = true;
+						} else if (dropzone === dropzone2) {
+							hasImage2 = true;
+						}
+						checkImagesUploaded();
+					};
+
+					const imageRender = files[0].type === 'application/pdf' ? await convertPdfToImage(files[0], 'file') : files[0];
+
+					reader.readAsDataURL(imageRender);
+				}
+			}
+
+			function base64ToFile(base64Data, filename) {
+				const arr = base64Data.split(',');
+				const mime = arr[0].match(/:(.*?);/)[1]; // Get the MIME type
+				const bstr = atob(arr[1]); // Decode base64
+				let n = bstr.length;
+				const u8arr = new Uint8Array(n);
+
+				while (n--) {
+					u8arr[n] = bstr.charCodeAt(n);
+				}
+
+				return new File([u8arr], filename, { type: mime });
+			}
+
+			// Check if both dropzones have images
+			function checkImagesUploaded() {
+				if (hasImage1 && hasImage2) {
+					const image1 = document.querySelector('#dropzone1 img');
+					const image2 = document.querySelector('#dropzone2 img');
+					
+					if (image1 && image2) {
+						const formData = new FormData();
+
+						const file1 = base64ToFile(image1.src, 'image1.png'); // Change filename as needed
+						const file2 = base64ToFile(image2.src, 'image2.png'); // Change filename as needed
+
+						formData.append('file1', file1);
+						formData.append('file2', file2);
+
+						fetch('http://127.0.0.1:5000/upload', {
+							method: 'POST',
+							body: formData,
+						})
+						.then(response => {
+							if (!response.ok) {
+								alert('ALERT Network response was not ok');
+								throw new Error('Network response was not ok');
+							}
+							return response.json();
+						})
+						.then(data => {
+							const responseContainer = document.getElementById('responseContainer');
+
+							// Clear previous content, if any
+							responseContainer.innerHTML = ''; 
+
+							// Set the inner HTML to the converted content
+							responseContainer.innerHTML = data.data;
+						})
+						.catch((error) => {
+							console.error('Error:', error);
+						});
+					} else {
+						console.log('No image found in the dropzone.');
+					}
+				}
+			}
+
+			// Prevent default behavior for drag over
+			function handleDragOver(event) {
+				event.preventDefault();
+			}
+
+			// Add event listeners
+			dropzone1.addEventListener('dragover', handleDragOver);
+			dropzone1.addEventListener('drop', (event) => handleDrop(event, dropzone1));
+			dropzone2.addEventListener('dragover', handleDragOver);
+			dropzone2.addEventListener('drop', (event) => handleDrop(event, dropzone2));
+		</script>
 	</body>
 </html>

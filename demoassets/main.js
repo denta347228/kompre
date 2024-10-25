@@ -98,7 +98,7 @@ $(function() {
     var file1;
     var file2;
     var resembleControl;
-
+//drop zone (ketika eksekusi ketika drop file ke drop zone 1)
     dropZone($("#dropzone1"), async function(file) {
         if (file.type === 'application/pdf') {
             file = await convertPdfToImage(file, 'file1')
@@ -111,7 +111,7 @@ $(function() {
                 .onComplete(onComplete);
         }
     });
-
+//drop zone (ketika eksekusi ketika drop file ke drop zone 2)
     dropZone($("#dropzone2"), async function(file) {
         if (file.type === 'application/pdf') {
             file = await convertPdfToImage(file, 'file2')
@@ -281,6 +281,8 @@ $(function() {
         xhr3.send();
     })();
 });
+
+//convert pdf to image
 
 async function convertPdfToImage(pdfFile, name) {
     const pdfData = await pdfFile.arrayBuffer();

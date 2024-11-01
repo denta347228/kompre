@@ -1,304 +1,329 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		<title>Resemble.js : Image analysis</title>
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width">
-		<link rel="stylesheet" href="libs/twitter-bootstrap/bootstrap.min.css">
-		<link rel="stylesheet" href="demoassets/resemble.css?v1">
-	</head>
-	<body>
-		<div class="container">
-			<header>
-				<div class="page-header">
-					<h1>Resemble.js : Image analysis and comparison</h1>
-				</div>
-			</header>
+<html lang="en">
 
-			<section role="main">
-				<div class="row">
-					<div class="span12">
-						<div class="hero-unit">
-							<div class="row">
-								<div class="span6">
-									<p>
-										<div id="drop-zone" class="drop-zone">
-											Drop image here.
-										</div>
-									</p>
-								</div>
-								<div class="span4">
-									<h2>What is this?</h2>
-									<p>
-										Resemble.js analyses and compares images with HTML5 canvas and JavaScript.
-									</p>
-									<p>
-										<strong>Try it for yourself.</strong>
-									</p>
-									<div id="image-data" style="display:none">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Virtual Integrity Testing</title>
+	
+	 <link rel="icon" type="image/png" href="Logo/BRI.svg" sizes="32x32" />
 
-										RGBA
-									    <div class="progress progress-danger">
-										    <div id="red" class="bar" style="width: 0%;"></div>
-									    </div>
-									    <div class="progress progress-success">
-										    <div id="green" class="bar" style="width: 0%;"></div>
-									    </div>
-									    <div class="progress">
-										    <div id="blue" class="bar" style="width: 0%;"></div>
-									    </div>
-									    <div class="progress last">
-										    <div id="alpha" class="bar" style="width: 0%;"></div>
-									    </div>
-										Black &amp; white
-										<div class="progress">
-											<div id="black" class="bar" style="width: 0%;"></div>
-										</div>
-										<div class="progress last">
-											<div id="white" class="bar" style="width: 0%;"></div>
-										</div>
-									    Brightness
-									    <div class="progress progress-warning">
-									    	<div id="brightness" class="bar" style="width: 0%;"></div>
-									    </div>
-									</div>
-								</div>
-							</div>
+	<style>
+        md-block {
+			white-space: pre;
+			font-family: monospace;
+		}
+    </style>
+    <link rel="stylesheet" href="libs/twitter-bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="demoassets/resemble.css?v1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+</head>
+
+<body>
+    <div class="container">
+		<img src="Logo/Logo-Bank-BRI.png" alt="Logo BRI" class="logo">
+        <h1 class="text-center mb-4 text-primary ">Virtual Integrity Testing</h1>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col" class="text-center">DESAIN FIGMA</th>
+                        <th scope="col" class="text-center">HASIL TESTING</th>
+                        <th scope="col" class="text-center">IMAGE ANALISIS (VISUAL)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="drop-zone" id="dropzone1"></div>
+                        </td>
+                        <td>
+                            <div class="drop-zone" id="dropzone2"></div>
+                        </td>
+                        <td>
+                            <div class="drop-zone" id="image-diff"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+			<h3 class="text-center text-light bg-dark ">Hasil Analisis</h3>
+				<!-- Response Container -->
+<md-block id="responseContainer" class="comparison-result" style="display: none;">
+Comparison result will appear here
+</md-block>
+
+<!-- Spinner -->
+<div id="loadingSpinner" class="text-center" style="display: none;">
+	<div class="spinner-border text-primary" role="status">
+		<span class="visually-hidden">Loading...</span>
+	</div>
+	<p class="mt-1">Processing comparison, please wait...</p>
+</div>
+
+<section role="main">
+	
+	<button class="btn btn-primary mt-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">VIT Control</button>
+	<div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+  		<div class="offcanvas-header">
+    		<h3 class="text-center text-dark" id="offcanvasScrollingLabel"></h3>
+    	<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close">
+		</button>
+  	</div>
+  		<div class="offcanvas-body">
+			<h3 class="text-center text-dark" id="offcanvasScrollingLabel">VIT CONTROL</h3>
+			<table class="table table-bordered align-middle">
+				<tbody>
+			<tr>
+				<th scope="row" class="bg-light">Ignore</th>
+				<td>
+					<div class="btn-group buttons" style="display: block; gap: 0px;">
+						<!-- <button class="btn btn-primary" id="raw">Mark Perbedaan</button> -->
+						<button class="btn btn-info" id="less">Reset</button>
+						<button class="btn btn-success" id="colors">No Color</button>
+						<!-- <button class="btn btn-warning" id="antialiasing">Ignore Antialiasing</button>
+						<button class="btn btn-danger" id="alpha">Ignore Alpha</button> -->
+					</div>
+				</td>
+			</tr>
+			<!-- Size Options -->
+			<tr>
+				<th scope="row" class="bg-light">Size</th>
+				<td>
+					<div class="btn-group buttons" role="group" aria-label="Size Options"
+						style="display: block;">
+						<button type="button" class="btn btn-primary active" id="original-size">
+							Original Size</button>
+						<button type="button" class="btn btn-success" id="same-size">Scale to Same
+							Size</button>
+					</div>
+				</td>
+			</tr>
+						
+				<!-- Color Options -->
+				<tr>
+					<th scope="row" class="bg-light">Color</th>
+					<td>
+						<div class="btn-group buttons" role="group" aria-label="Color Options"
+							style="display: block;">
+							<button type="button" class="btn btn-danger" id="pink">Pink</button>
+							<button type="button" class="btn btn-warning" id="yellow">Yellow</button>
 						</div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="span12">
-						<div class="row">
-							<div class="span6">
-								<div id="dropzone1" class="small-drop-zone">
-									Drop first image
-								</div>
-								<div id="dropzone2" class="small-drop-zone">
-									Drop second image
-								</div>
-							</div>
-							<div class="span6">
-								<h2>Compare two images?</h2>
-								<p>
-									Drop two images on the boxes to the left.  The box below will show a generated 'diff' image, pink areas show mismatch.  This example best works with two very similar but slightly different images.  Try for yourself!
-								</p>
-								<p>
-								Don't have any images to compare?
-								<br />
-								<br />
-								<button class="btn" id="example-images">Use example images</button>
-								<br />
-								<br />
-								<button class="btn" id="example-images-alpha">Use example images with alpha</button>
-								</p>
-								<div id="image-diff" class="small-drop-zone">
-									Diff will appear here.
-								</div>
-								<br/>
+					</td>
+				</tr>
 
-								<div class="btn-group buttons" style="display:none">
-									<button class="btn" id="raw">Ignore nothing</button>
-									<button class="btn active" id="less">Ignore less</button>
-									<button class="btn" id="colors">Ignore colors</button>
-									<button class="btn" id="antialiasing">Ignore antialiasing</button>
-									<button class="btn" id="alpha">Ignore alpha</button>
-								</div>
-
-								<br/>
-								<br/>
-								<div class="btn-group buttons" style="display:none">
-									<button class="btn active" id="original-size">Use original size</button>
-									<button class="btn" id="same-size">Scale to same size</button>
-								</div>
-
-								<div class="btn-group buttons" style="display:none">
-									<button class="btn active" id="pink">Pink</button>
-									<button class="btn" id="yellow">Yellow</button>
-								</div>
-								<br/>
-								<br/>
-
-								<div class="btn-group buttons" style="display:none">
-									<button class="btn active" id="flat">Flat</button>
-									<button class="btn" id="movement">Movement</button>
-									<button class="btn" id="flatDifferenceIntensity">Flat with diff intensity</button>
-									<button class="btn" id="movementDifferenceIntensity">Movement with diff intensity</button>
-									<button class="btn" id="diffOnly">Diff portion from the input</button>
-								</div>
-								<br/>
-								<br/>
-
-								<div class="btn-group buttons" style="display:none">
-									<button class="btn active" id="opaque">Opaque</button>
-									<button class="btn" id="transparent">Transparent</button>
-								</div>
-								<br/>
-								<br/>
-
-								<div class="btn-group buttons" style="display:none">
-									<div class="row">
-										<div class="span1">
-											<label>Left</label>
-											<input type="number" class="input-mini" id="bounding-box-x1" value="100" />
-										</div>
-										<div class="span1">
-											<label>Top</label>
-											<input type="number" class="input-mini" id="bounding-box-y1" value="100" />
-										</div>
-										<div class="span1">
-											<label>Right</label>
-											<input type="number" class="input-mini" id="bounding-box-x2" value="400" />
-										</div>
-										<div class="span1">
-											<label>Bottom</label>
-											<input type="number" class="input-mini" id="bounding-box-y2" value="300" />
-										</div>
-										<div class="span2">
-											<label>&nbsp;</label>
-											<button class="btn" id="boundingBox">Set bounding box</button>
-										</div>
-									</div>
-								</div>
-
-								<br/>
-								<br/>
-
-								<div class="btn-group buttons" style="display:none">
-									<div class="row">
-										<div class="span1">
-											<label>Left</label>
-											<input type="number" class="input-mini" id="ignored-box-x1" value="120" />
-										</div>
-										<div class="span1">
-											<label>Top</label>
-											<input type="number" class="input-mini" id="ignored-box-y1" value="200" />
-										</div>
-										<div class="span1">
-											<label>Right</label>
-											<input type="number" class="input-mini" id="ignored-box-x2" value="400" />
-										</div>
-										<div class="span1">
-											<label>Bottom</label>
-											<input type="number" class="input-mini" id="ignored-box-y2" value="250" />
-										</div>
-										<div class="span2">
-											<label>&nbsp;</label>
-											<button class="btn" id="ignoredBox">Set ignored box</button>
-										</div>
-									</div>
-								</div>
-
-								<br/>
-								<br/>
-
-								<div class="btn-group buttons" style="display:none">
-									<div class="row">
-										<div class="span1">
-											<label>Red</label>
-											<input type="number" class="input-mini" id="ignored-color-r" min="0" max="255" value="255" />
-										</div>
-										<div class="span1">
-											<label>Green</label>
-											<input type="number" class="input-mini" id="ignored-color-g" min="0" max="255" value="0" />
-										</div>
-										<div class="span1">
-											<label>Blue</label>
-											<input type="number" class="input-mini" id="ignored-color-b" min="0" max="255" value="0" />
-										</div>
-										<div class="span1">
-											<label>Alpha</label>
-											<input type="number" class="input-mini" id="ignored-color-a" min="0" max="255" value="255" />
-										</div>
-										<div class="span2">
-											<label>&nbsp;</label>
-											<button class="btn" id="ignoredColor">Set ignored color</button>
-										</div>
-									</div>
-								</div>
-
-								<br/>
-								<br/>
-								<div id="diff-results" style="display:none;">
-									<p>
-										<strong>The second image is <span id="mismatch"></span>% different compared to the first.
-										<span id="differentdimensions" style="display:none;">And they have different dimensions.</span></strong>
-									</p>
-									<p>
-										Use the buttons above to change the comparison algorithm.  Perhaps you don't care about color? Annoying antialiasing causing too much noise?  Resemble.js offers multiple comparison options.
-									</p>
-								</div>
-
-								<p id="thesame" style="display:none;">
-									<strong>These images are the same!</strong>
-								</p>
-							</div>
+				<!-- Comparison Style Options -->
+				<tr>
+					<th scope="row" class="bg-light">Style</th>
+					<td>
+						<div class="btn-group buttons" role="group" aria-label="Comparison Style Options"
+							style="display: block;">
+							<button type="button" class="btn btn-primary" id="flat">Flat</button>
+							<button type="button" class="btn btn-success" id="movement">Movement</button>
+							<!-- <button type="button" class="btn btn-warning" id="flatDifferenceIntensity">Flat
+								with Diff Intensity</button> -->
+							<!-- <button type="button" class="btn btn-danger"
+								id="movementDifferenceIntensity">Movement with Diff Intensity</button> -->
+							<button type="button" class="btn btn-info" id="diffOnly">Hide Background</button>
 						</div>
-					</div>
-				</div>
-				<br/><br/>
-				<div class="row">
-					<div class="span6">
-						<h2>Why?</h2>
-						<p>
-							Resemble.js can be used for any image analysis and comparison requirement you might have in the browser. However, it has been designed and built for use by the PhantomJS powered visual regression library <a href="https://github.com/Huddle/PhantomCSS" target="_blank">PhantomCSS</a>. PhantomCSS needs to be able to ignore antialiasing as this would cause differences between screenshots derived from different machines.
-						</p>
-						<p>
-							Resemble.js uses the <a href="http://www.w3.org/TR/file-upload/" target="_blank">HTML5 File API</a> to parse image data, and canvas for rendering image diffs.
-						</p>
-						<p>
-							<br/>
-							<a class="btn btn-large btn-primary" href="https://github.com/Huddle/Resemble.js"><strong>View project on GitHub</strong></a>
-						</p>
-					</div>
-					<div class="span6">
-						<h2>How can I use it?</h2>
-						<p>Retrieve basic analysis on image.</p>
-						<pre>
-var api = resemble(fileData).onComplete(function(data){
-	return data;
-	/*
-	{
-	  red: 100,
-	  green: 100,
-	  blue: 100,
-	  brightness: 100,
-	  alpha: 100,
-	  white: 100,
-	  black: 100
-	}
-	*/
-});</pre>
-						<p>Use resemble to compare two images.</p>
-						<pre>
-resemble(file).compareTo(file2).onComplete(function(){
-	return data;
-	/*
-	{
-	  misMatchPercentage : 100, // %
-	  isSameDimensions: true, // or false
-	  getImageDataUrl: function(){}
-	}
-	*/
-});</pre>
-<p>Take a look at the <a href="demoassets/main.js" target="_blank">JavaScript for this demo page</a> from a better example</p>
-					</div>
-				</div>
-			</section>
+					</td>
+				</tr>
 
-			<footer class="footer">
-				<p>	
-					Created by <a href="https://github.com/jamescryer" target="_blank">James Cryer</a> and the Huddle development team.
-				</p>
-				<p>
-					The image used in the comparison example was created by <a href="https://twitter.com/Shadowise" target="_blank">Daniel Rajendran</a>
-				</p>
-			</footer>
+				<!-- Opacity Options -->
+				<tr>
+					<th scope="row" class="bg-light">Opacity</th>
+					<td>
+						<div class="btn-group buttons" role="group" aria-label="Opacity Options"
+							style="display: block;">
+							<button type="button" class="btn btn-primary active" id="opaque">Opaque</button>
+							<button type="button" class="btn btn-success"
+								id="transparent">Transparent</button>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+  </div>
+</div>
+
+		<!-- Diff Results Section -->
+		<div id="diff-results" class="p-3 bg-light border rounded mt-3" style="display: none;">
+			<p>
+				<strong>
+					The second image is <span id="mismatch"></span>% different compared to the first.
+					<span id="differentdimensions" style="display: none;">And they have different
+						dimensions.</span>
+				</strong>
+			</p>
 		</div>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-		<script src="resemble.js"></script>
-		<script src="demoassets/main.js"></script>
-	</body>
+
+		<!-- Same Images Message -->
+		<p id="thesame" class="text-center bg-dark text-success fw-bold mt-3" style="display: none;">
+			These images are the same!
+		</p>
+	</div>
+</section>
+
+            <footer class="footer mt-5">
+                <p class=" text-white">
+                    Create by <a href="https://www.linkedin.com/in/denta-mustofa-4b9289240/" target="_blank">Denta
+                        Mustofa</a>
+                </p>
+                <p class="text-white fw-bold">
+                    VIT Version 1.0
+                </p>
+            </footer>
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+            <script src="resemble.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+            <script src="demoassets/main.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+			<script type="module" src="https://md-block.verou.me/md-block.js"></script>
+			<script>
+				document.querySelectorAll('.dropdown-menu .dropdown-item').forEach((item) => {
+					item.addEventListener('click', function (event) {
+						event.stopPropagation(); 
+					});
+				});
+			</script>
+
+
+            <script>
+                const dropzone1 = document.getElementById("dropzone1");
+                const dropzone2 = document.getElementById("dropzone2");
+                let hasImage1 = false;
+                let hasImage2 = false;
+
+                // Function to show loading spinner
+                function showLoading() {
+                    document.getElementById("loadingSpinner").style.display = "block";
+                    document.getElementById("responseContainer").style.display = "none";
+                }
+
+                // Function to hide loading spinner
+                function hideLoading() {
+                    document.getElementById("loadingSpinner").style.display = "none";
+                }
+
+                // Function to display the result
+                function showResult(resultText) {
+                    const responseContainer = document.getElementById("responseContainer");
+                    responseContainer.style.display = "block";
+                    responseContainer.textContent = resultText;
+                }
+
+                // Function to handle image drop
+                async function handleDrop(event, dropzone) {
+                    event.preventDefault();
+                    const files = event.dataTransfer.files;
+
+                    if (files.length <= 0) return;
+
+                    const img = document.createElement("img");
+                    const reader = new FileReader();
+
+                    reader.onload = async function (e) {
+                        img.src = e.target.result;
+                        dropzone.innerHTML = "";
+                        dropzone.appendChild(img);
+
+                        if (dropzone === dropzone1) {
+                            hasImage1 = true;
+                        } else if (dropzone === dropzone2) {
+                            hasImage2 = true;
+                        }
+                        checkImagesUploaded();
+                    };
+
+                    const imageRender =
+                        files[0].type === "application/pdf" ?
+                        await convertPdfToImage(files[0], "file") :
+                        files[0];
+
+                    reader.readAsDataURL(imageRender);
+                }
+
+                // Function to check if both images are uploaded
+                function checkImagesUploaded() {
+                    if (hasImage1 && hasImage2) {
+                        const image1 = document.querySelector("#dropzone1 img");
+                        const image2 = document.querySelector("#dropzone2 img");
+
+                        if (image1 && image2) {
+                            textCompare(image1, image2); // Start comparison
+                        } else {
+                            console.log("No image found in the dropzone.");
+                        }
+                    }
+                }
+
+                // Function to compare images using GPT
+                function textCompare(image1, image2) {
+                    const payload = {
+                        model: "gpt-4o-mini",
+                        messages: [{
+                            role: "user",
+                            content: [{
+                                    type: "text",
+                                    text: "Bandingkan berkas yang di input ini, apakah berkas tersebut sama?"
+                                },
+                                {
+                                    type: "image_url",
+                                    image_url: {
+                                        url: image1.src
+                                    }
+                                },
+                                {
+                                    type: "image_url",
+                                    image_url: {
+                                        url: image2.src
+                                    }
+                                },
+                            ],
+                        }, ],
+                        max_tokens: 500,
+                        temperature: 0,
+						frequency_penalty:0,
+						presence_penalty:0,
+						top_p:0
+
+                    };
+
+                    const headers = {
+                        "Content-Type": "application/json",
+                    };
+
+                    showLoading(); // Show spinner before the request starts
+
+                    fetch("https://api.openai.com/v1/chat/completions", {
+                            method: "POST",
+                            body: JSON.stringify(payload),
+                            headers: headers,
+                        })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            showResult(data.choices[0].message.content.replace(/\*\*/g, '')); // menghilangkan bintang saat ditampilkan 
+                            hideLoading(); // Hide spinner
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                            hideLoading(); // Hide spinner even if an error occurs
+                        });
+                }
+
+				
+
+                // Add event listeners
+                dropzone1.addEventListener("dragover", (event) => event.preventDefault());
+                dropzone1.addEventListener("drop", (event) => handleDrop(event, dropzone1));
+                dropzone2.addEventListener("dragover", (event) => event.preventDefault());
+                dropzone2.addEventListener("drop", (event) => handleDrop(event, dropzone2));
+
+            </script>	
+</body>
+
 </html>

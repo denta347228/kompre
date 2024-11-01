@@ -57,26 +57,26 @@ $(function() {
 
         $("#image-diff").html(diffImage);
 
-        $(diffImage).click(function() {
-            var w = window.open("about:blank", "_blank");
-            var html = w.document.documentElement;
-            var body = w.document.body;
+        // $(diffImage).click(function() {
+        //     var w = window.open("about:blank", "_blank");
+        //     var html = w.document.documentElement;
+        //     var body = w.document.body;
 
-            html.style.margin = 0;
-            html.style.padding = 0;
-            body.style.margin = 0;
-            body.style.padding = 0;
+        //     html.style.margin = 0;
+        //     html.style.padding = 0;
+        //     body.style.margin = 0;
+        //     body.style.padding = 0;
 
-            var img = w.document.createElement("img");
-            img.src = diffImage.src;
-            img.alt = "image diff";
-            img.style.maxWidth = "100%";
-            img.addEventListener("click", function() {
-                this.style.maxWidth =
-                    this.style.maxWidth === "100%" ? "" : "100%";
-            });
-            body.appendChild(img);
-        });
+        //     var img = w.document.createElement("img");
+        //     img.src = diffImage.src;
+        //     img.alt = "image diff";
+        //     img.style.maxWidth = "100%";
+        //     img.addEventListener("click", function() {
+        //         this.style.maxWidth =
+        //             this.style.maxWidth === "100%" ? "" : "100%";
+        //     });
+        //     body.appendChild(img);
+        // });
 
         $(".buttons").show();
 
@@ -98,8 +98,12 @@ $(function() {
     var file1;
     var file2;
     var resembleControl;
-
-    dropZone($("#dropzone1"), function(file) {
+//drop zone (ketika eksekusi ketika drop file ke drop zone 1)
+    dropZone($("#dropzone1"), async function(file) {
+        if (file.type === 'application/pdf') {
+            file = await convertPdfToImage(file, 'file1')
+        }
+        
         file1 = file;
         if (file2) {
             resembleControl = resemble(file)
@@ -107,8 +111,11 @@ $(function() {
                 .onComplete(onComplete);
         }
     });
-
-    dropZone($("#dropzone2"), function(file) {
+//drop zone (ketika eksekusi ketika drop file ke drop zone 2)
+    dropZone($("#dropzone2"), async function(file) {
+        if (file.type === 'application/pdf') {
+            file = await convertPdfToImage(file, 'file2')
+        }
         file2 = file;
         if (file1) {
             resembleControl = resemble(file)
@@ -244,71 +251,69 @@ $(function() {
         }
     });
 
-    (function() {
-        var xhr = new XMLHttpRequest();
-        var xhr2 = new XMLHttpRequest();
-        var xhr3 = new XMLHttpRequest();
-        var done = $.Deferred();
-        var dtwo = $.Deferred();
-        var dthree = $.Deferred();
+    // (function() {
+    //     var xhr = new XMLHttpRequest();
+    //     var xhr2 = new XMLHttpRequest();
+    //     var xhr3 = new XMLHttpRequest();
+    //     var done = $.Deferred();
+    //     var dtwo = $.Deferred();
+    //     var dthree = $.Deferred();
 
-        xhr.open("GET", "demoassets/People.jpg", true);
-        xhr.responseType = "blob";
-        xhr.onload = function(e) {
-            done.resolve(this.response);
-        };
-        xhr.send();
+    //     xhr.open("GET", "demoassets/People.jpg", true);
+    //     xhr.responseType = "blob";
+    //     xhr.onload = function(e) {
+    //         done.resolve(this.response);
+    //     };
+    //     xhr.send();
 
-        xhr2.open("GET", "demoassets/People2.jpg", true);
-        xhr2.responseType = "blob";
-        xhr2.onload = function(e) {
-            dtwo.resolve(this.response);
-        };
-        xhr2.send();
+    //     xhr2.open("GET", "demoassets/People2.jpg", true);
+    //     xhr2.responseType = "blob";
+    //     xhr2.onload = function(e) {
+    //         dtwo.resolve(this.response);
+    //     };
+    //     xhr2.send();
 
-        xhr3.open("GET", "demoassets/PeopleAlpha.png", true);
-        xhr3.responseType = "blob";
-        xhr3.onload = function(e) {
-            dthree.resolve(this.response);
-        };
-        xhr3.send();
-
-        $("#example-images").click(function() {
-            $("#dropzone1").html('<img src="demoassets/People.jpg"/>');
-            $("#dropzone2").html('<img src="demoassets/People2.jpg"/>');
-
-            $.when(done, dtwo).done(function(file, file1) {
-                if (typeof FileReader === "undefined") {
-                    resembleControl = resemble("demoassets/People.jpg")
-                        .compareTo("demoassets/People2.jpg")
-                        .onComplete(onComplete);
-                } else {
-                    resembleControl = resemble(file)
-                        .compareTo(file1)
-                        .onComplete(onComplete);
-                }
-            });
-
-            return false;
-        });
-
-        $("#example-images-alpha").click(function() {
-            $("#dropzone1").html('<img src="demoassets/People.jpg"/>');
-            $("#dropzone2").html('<img src="demoassets/PeopleAlpha.png"/>');
-
-            $.when(done, dthree).done(function(file, file1) {
-                if (typeof FileReader === "undefined") {
-                    resembleControl = resemble("demoassets/People.jpg")
-                        .compareTo("demoassets/PeopleAlpha.png")
-                        .onComplete(onComplete);
-                } else {
-                    resembleControl = resemble(file)
-                        .compareTo(file1)
-                        .onComplete(onComplete);
-                }
-            });
-
-            return false;
-        });
-    })();
+    //     xhr3.open("GET", "demoassets/PeopleAlpha.png", true);
+    //     xhr3.responseType = "blob";
+    //     xhr3.onload = function(e) {
+    //         dthree.resolve(this.response);
+    //     };
+    //     xhr3.send();
+    // })();
 });
+
+//convert pdf to image
+
+async function convertPdfToImage(pdfFile, name) {
+    const pdfData = await pdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+    
+    // Get the first page
+    const page = await pdf.getPage(1);
+    
+    // Set scale for rendering
+    const scale = 2; // Adjust as needed
+    const viewport = page.getViewport({ scale });
+
+    // Prepare canvas
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    // console.log(canvas.width)
+    // console.log(canvas.height)
+
+    // Render PDF page into canvas context
+    await page.render({
+        canvasContext: context,
+        viewport: viewport
+    }).promise;
+
+    // Convert canvas to image file
+    const imageDataUrl = canvas.toDataURL('image/png');
+    const blob = await (await fetch(imageDataUrl)).blob();
+    return new File([blob], `${name}-page.png`, { type: 'image/png' });
+}
+
+

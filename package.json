@@ -3,6 +3,7 @@
     "version": "5.0.0",
     "description": "Image analysis and comparison with HTML5",
     "main": "resemble.js",
+    "type": "module",
     "repository": {
         "type": "git",
         "url": "https://github.com/rsmbl/Resemble.js.git"
@@ -56,5 +57,8 @@
     },
     "jest": {
         "testEnvironment": "node"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5"
     }
 }

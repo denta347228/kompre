@@ -3,6 +3,9 @@ James Cryer / Huddle
 URL: https://github.com/Huddle/Resemble.js
 */
 
+
+//Error respons
+
 var naiveFallback = function () {
     // ISC (c) 2011-2019 https://github.com/medikoo/es5-ext/blob/master/global.js
     if (typeof self === "object" && self) {
@@ -13,6 +16,8 @@ var naiveFallback = function () {
     }
     throw new Error("Unable to resolve global `this`");
 };
+
+//Fungsi ini mencoba mengembalikan objek global (self untuk Web Workers atau window untuk browser). Jika keduanya tidak ditemukan, ia melemparkan error
 
 var getGlobalThis = function () {
     // ISC (c) 2011-2019 https://github.com/medikoo/es5-ext/blob/master/global.js
@@ -300,6 +305,8 @@ var isNode = function () {
             imageData = hiddenCanvas.getContext("2d").getImageData(0, 0, width, height);
 
             images.push(imageData);
+
+            
 
             callback(imageData, width, height);
         }
@@ -662,6 +669,7 @@ var isNode = function () {
                 }
             });
 
+            //meenghitung persentase
             data.rawMisMatchPercentage = (mismatchCount / (height * width)) * 100;
             data.misMatchPercentage = data.rawMisMatchPercentage.toFixed(2);
             data.diffBounds = diffBounds;
